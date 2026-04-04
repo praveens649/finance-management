@@ -40,15 +40,67 @@ export async function updateSession(request: NextRequest) {
   // users randomly logging out due to token expiration issues not being caught.
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth')
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
+  const isAuthRoute = request.nextUrl.pathname.endsWith('/login') || request.nextUrl.pathname.startsWith('/auth');
+
+  if (!user && !isAuthRoute) {
+    // no user: redirect unauthenticated traffic to login page
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    url.pathname = request.nextUrl.pathname.startsWith('/analyst') ? '/analyst/login' : '/admin/login';
     return NextResponse.redirect(url)
+  }
+
+  // If user is authenticated, retrieve profile for role-based access control
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role, is_active')
+      .eq('id', user.id)
+      .single();
+
+    const role = profile?.role;
+    const isActive = profile?.is_active !== false; // handle null gracefully
+
+    // Deactivated user handling
+    if (!isActive && !isAuthRoute) {
+      // Deactivated users should be immediately signed out and sent to login screen
+      await supabase.auth.signOut();
+      const url = request.nextUrl.clone();
+      url.pathname = request.nextUrl.pathname.startsWith('/analyst') ? '/analyst/login' : '/admin/login';
+      url.searchParams.set('error', 'Account is deactivated');
+      return NextResponse.redirect(url);
+    }
+
+    if (isActive && !!role) {
+      const path = request.nextUrl.pathname;
+
+      // Restrict `/admin` endpoints
+      if (path.startsWith('/admin') && role !== 'admin') {
+        const url = request.nextUrl.clone();
+        url.pathname = role === 'user' ? '/user' : `/${role}`;
+        return NextResponse.redirect(url);
+      }
+
+      // Restrict `/analyst` endpoints
+      if (path.startsWith('/analyst') && role !== 'analyst' && role !== 'admin') {
+        const url = request.nextUrl.clone();
+        url.pathname = role === 'user' ? '/user' : `/${role}`;
+        return NextResponse.redirect(url);
+      }
+
+      // Restrict `/user` endpoints
+      if (path.startsWith('/user') && role !== 'user' && role !== 'admin') {
+        const url = request.nextUrl.clone();
+        url.pathname = role === 'user' ? '/user' : `/${role}`;
+        return NextResponse.redirect(url);
+      }
+
+      // If an authenticated user hits the login page, safely redirect them to their respective portal
+      if (isAuthRoute) {
+        const url = request.nextUrl.clone();
+        url.pathname = role === 'user' ? '/user' : `/${role}`;
+        return NextResponse.redirect(url);
+      }
+    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're

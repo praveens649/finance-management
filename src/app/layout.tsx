@@ -18,6 +18,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Finance Management Platform",
   description: "Secure, role-based finance management platform",
+  icons: {
+    icon: "/image.png",
+  },
 };
 
 export default function RootLayout({

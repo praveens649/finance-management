@@ -248,7 +248,7 @@ GET    /api/admin/users/:id/analytics
 * Edge case handling (inactive users, invalid inputs)
 
 ---
-
+## Use demo credentials for admin access : admin@test.com | password123
 ## 🚀 Conclusion
 
 This system demonstrates:

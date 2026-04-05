@@ -40,13 +40,22 @@ export async function updateSession(request: NextRequest) {
   // users randomly logging out due to token expiration issues not being caught.
   const { data: { user } } = await supabase.auth.getUser()
 
-  const isAuthRoute = request.nextUrl.pathname.endsWith('/login') || request.nextUrl.pathname.startsWith('/auth');
+  const path = request.nextUrl.pathname;
+  const isAuthRoute = path.endsWith('/login') || path.startsWith('/auth');
+  const isAnalystPath = path.startsWith('/analyst') || path.startsWith('/dashboard/analyst');
+  const isAnalystApiPath = path.startsWith('/api/analyst');
+  const isAdminPath = path.startsWith('/admin');
+  const isUserPath = path.startsWith('/user');
 
   if (!user && !isAuthRoute) {
+    if (isAnalystApiPath) {
+      return NextResponse.json({ success: false, error: 'Unauthorized security context.' }, { status: 401 });
+    }
+
     // no user: redirect unauthenticated traffic to login page
-    const url = request.nextUrl.clone()
-    url.pathname = request.nextUrl.pathname.startsWith('/analyst') ? '/analyst/login' : '/admin/login';
-    return NextResponse.redirect(url)
+    const url = request.nextUrl.clone();
+    url.pathname = isAnalystPath ? '/analyst/login' : '/admin/login';
+    return NextResponse.redirect(url);
   }
 
   // If user is authenticated, retrieve profile for role-based access control
@@ -64,31 +73,37 @@ export async function updateSession(request: NextRequest) {
     if (!isActive && !isAuthRoute) {
       // Deactivated users should be immediately signed out and sent to login screen
       await supabase.auth.signOut();
+      if (isAnalystApiPath) {
+        return NextResponse.json({ success: false, error: 'Account is deactivated' }, { status: 403 });
+      }
+
       const url = request.nextUrl.clone();
-      url.pathname = request.nextUrl.pathname.startsWith('/analyst') ? '/analyst/login' : '/admin/login';
+      url.pathname = isAnalystPath ? '/analyst/login' : '/admin/login';
       url.searchParams.set('error', 'Account is deactivated');
       return NextResponse.redirect(url);
     }
 
     if (isActive && !!role) {
-      const path = request.nextUrl.pathname;
-
       // Restrict `/admin` endpoints
-      if (path.startsWith('/admin') && role !== 'admin') {
+      if (isAdminPath && role !== 'admin') {
         const url = request.nextUrl.clone();
         url.pathname = role === 'user' ? '/user' : `/${role}`;
         return NextResponse.redirect(url);
       }
 
-      // Restrict `/analyst` endpoints
-      if (path.startsWith('/analyst') && role !== 'analyst' && role !== 'admin') {
+      // Restrict analyst pages and APIs to analyst users only.
+      if ((isAnalystPath || isAnalystApiPath) && role !== 'analyst') {
+        if (isAnalystApiPath) {
+          return NextResponse.json({ success: false, error: 'Forbidden: analyst access required.' }, { status: 403 });
+        }
+
         const url = request.nextUrl.clone();
-        url.pathname = role === 'user' ? '/user' : `/${role}`;
+        url.pathname = role === 'user' ? '/user' : '/admin';
         return NextResponse.redirect(url);
       }
 
       // Restrict `/user` endpoints
-      if (path.startsWith('/user') && role !== 'user' && role !== 'admin') {
+      if (isUserPath && role !== 'user' && role !== 'admin') {
         const url = request.nextUrl.clone();
         url.pathname = role === 'user' ? '/user' : `/${role}`;
         return NextResponse.redirect(url);

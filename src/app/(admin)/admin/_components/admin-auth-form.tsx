@@ -8,8 +8,9 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { AuthService } from '@/services/auth/auth.service'
+import { AuthService } from '../../../../../models/services/auth.service'
 import { signInAdminQuery } from '../_query/admin-auth.query'
+// import { signInAdminQuery } from '../_query/admin-auth.query'
 
 export function AdminAuthForm() {
   const router = useRouter()

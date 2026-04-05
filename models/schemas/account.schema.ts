@@ -43,15 +43,30 @@ export const createAccountSchema = accountSchema.pick({
   name: true,
   type: true,
 }).extend({
-  // Initial balance is typically allowed ONLY at creation time.
-  balance: z.coerce.number()
-    .finite()
-    .refine((val) => Number(val.toFixed(2)) === val, "Max 2 decimal places")
-    .default(0),
   currency: z.string().length(3).toUpperCase().default("INR").optional(),
 });
 
 export type CreateAccountPayload = z.infer<typeof createAccountSchema>;
+
+/**
+ * Schema for Onboarding Account Creation
+ * Same as createAccountSchema but with an OPTIONAL initial_balance.
+ *
+ * CRITICAL RULE:
+ * `initial_balance` is NOT directly written to accounts.balance.
+ * If > 0, it becomes a separate `credit` transaction ("Initial balance").
+ * The DB trigger then atomically updates the balance.
+ */
+export const onboardAccountSchema = createAccountSchema.extend({
+  initial_balance: z.coerce.number()
+    .finite()
+    .min(0, "Initial balance cannot be negative")
+    .refine((val) => Number(val.toFixed(2)) === val, "Max 2 decimal places")
+    .optional()
+    .default(0),
+});
+
+export type OnboardAccountPayload = z.infer<typeof onboardAccountSchema>;
 
 
 /**

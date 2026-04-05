@@ -18,7 +18,44 @@ as $$
     sum(case when type='debit' then amount else 0 end) as expense
   from transactions
   group by date_trunc('month', created_at)
-  order by month desc;
+  order by month;
+$$;
+
+-- ========================
+-- CATEGORY BREAKDOWN
+-- ========================
+create or replace function get_category_breakdown()
+returns table (
+  category_id uuid,
+  total numeric
+)
+language sql
+security definer set search_path = public
+as $$
+  select
+    category_id,
+    sum(amount) as total
+  from transactions
+  where type = 'debit'
+  group by category_id
+  order by total desc;
+$$;
+
+-- ========================
+-- GLOBAL SUMMARY
+-- ========================
+create or replace function get_global_summary()
+returns table (
+  total_income numeric,
+  total_expense numeric
+)
+language sql
+security definer set search_path = public
+as $$
+  select
+    coalesce(sum(case when type='credit' then amount else 0 end), 0) as total_income,
+    coalesce(sum(case when type='debit' then amount else 0 end), 0) as total_expense
+  from transactions;
 $$;
 
 -- ========================

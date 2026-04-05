@@ -1,9 +1,11 @@
 import { User } from "@supabase/supabase-js";
 
 export interface SignUpData {
-  username: string;
   email: string;
   password: string;
+  firstName?: string;
+  lastName?: string;
+  role?: 'user' | 'analyst';
 }
 
 export interface AuthResponse {

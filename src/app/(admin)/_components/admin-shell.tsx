@@ -3,13 +3,14 @@
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@/components/providers/auth-provider'
-import { AuthService } from '@/services/auth/auth.service'
+import { AuthService } from '../../../../models/services/auth.service'
 
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { AdminAuthForm } from '../admin/_components/admin-auth-form'
-import { AppSidebar } from './app-sidebar'
+// import { AppSidebar } from './app-sidebar'
 import LoaderComponent from '@/components/ui/globals/screen-loader'
+import { AppSidebar } from './app-sidebar'
 
 type AdminShellProps = {
   children: React.ReactNode
@@ -34,7 +35,7 @@ function AdminShellContent({ children }: AdminShellProps) {
 
         if (!hasAdminRole) {
           await AuthService.signOut().catch(() => undefined)
-          router.replace('/')
+          router.replace('/admin')
           return { isAdmin: false }
         }
 

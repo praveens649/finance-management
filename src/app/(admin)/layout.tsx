@@ -1,4 +1,6 @@
-import { AdminShell } from './_components/admin-shell'
+// import { AdminShell } from './_components/admin-shell'
+
+import { AdminShell } from "./_components/admin-shell"
 
 type AdminLayoutProps = {
   children: React.ReactNode

@@ -10,9 +10,9 @@ export function createTransferService(supabase: SupabaseClient) {
         // Run Amount & Schema validations
         const validPayload = transferPayloadSchema.parse(payload);
 
-        // Rule 3: Prevent Self-Transfer
+        // Prevent transferring to the same account
         if (validPayload.source_account_id === validPayload.destination_account_id) {
-          return { success: false, error: "Cannot transfer money to the same account." };
+          return { success: false, error: "Cannot transfer to the same account." };
         }
 
         // Fetch User Identity securely
@@ -32,7 +32,7 @@ export function createTransferService(supabase: SupabaseClient) {
         // Fetch both accounts simultaneously to optimize DB hits
         const { data: accounts, error: accountsError } = await supabase
           .from("accounts")
-          .select("id, user_id, balance, currency")
+          .select("id, user_id, balance, currency, name")
           .in("id", [validPayload.source_account_id, validPayload.destination_account_id]);
 
         if (accountsError || !accounts || accounts.length !== 2) {
@@ -69,12 +69,26 @@ export function createTransferService(supabase: SupabaseClient) {
         const transferRefId = crypto.randomUUID();
         const refTag = `[TRF-${transferRefId.substring(0,8)}]`;
 
+        // Check if this is a self-transfer (both accounts belong to user)
+        const isSelfTransfer = sourceAccount.user_id === user.id && destAccount.user_id === user.id
+          && sourceAccount.user_id === destAccount.user_id;
+
         // Rule 7, 10, & 11: Atomicity, DB Triggers, and Failure Recovery
         // Supabase/PostgREST naturally executes array inserts within a SINGLE database-level transaction.
         // If the debit fails, the credit never happens. If the credit fails, the debit rolls back.
         // Your database trigger safely updates the balances atomically.
         
-        // Rule 9: Category Handling -> category = null (Don't mix transfers with actual expenses)
+        // Rule 9: Category Handling
+        // For self-transfers: category = null, but description includes destination account name
+        // For external transfers: category = null
+        const outDescription = isSelfTransfer
+          ? `Self Transfer to ${destAccount.name} ${refTag}: ${validPayload.description || ''}`.trim()
+          : `Transfer out ${refTag}: ${validPayload.description || ''}`.trim();
+
+        const inDescription = isSelfTransfer
+          ? `Self Transfer from ${sourceAccount.name} ${refTag}: ${validPayload.description || ''}`.trim()
+          : `Transfer in ${refTag}: ${validPayload.description || ''}`.trim();
+
         const { error: insertError } = await supabase
           .from("transactions")
           .insert([
@@ -84,7 +98,7 @@ export function createTransferService(supabase: SupabaseClient) {
               category_id: null, 
               type: "debit",
               amount: validPayload.amount,
-              description: `Transfer out ${refTag}: ${validPayload.description || ''}`.trim()
+              description: outDescription
             },
             {
               user_id: user.id,
@@ -92,7 +106,7 @@ export function createTransferService(supabase: SupabaseClient) {
               category_id: null,
               type: "credit",
               amount: validPayload.amount,
-              description: `Transfer in ${refTag}: ${validPayload.description || ''}`.trim()
+              description: inDescription
             }
           ]);
 

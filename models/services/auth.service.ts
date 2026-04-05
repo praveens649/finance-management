@@ -1,5 +1,6 @@
 import { AuthError, SupabaseClient } from "@supabase/supabase-js";
 import { AuthResponse, SignUpData } from "../types/auth.types";
+import { createClient } from "../../lib/supabase/client";
 
 
 export function createAuthService(supabase: SupabaseClient) {
@@ -29,11 +30,7 @@ export function createAuthService(supabase: SupabaseClient) {
     async getCurrentUserId(): Promise<string | null> {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          return null;
-        }
-
+        if (!session) return null;
         return session.user?.id || null;
       } catch (error) {
         console.log("Error fetching user ID:", error);
@@ -43,23 +40,26 @@ export function createAuthService(supabase: SupabaseClient) {
 
     async signUp(data: SignUpData): Promise<AuthResponse> {
       try {
-        console.log(data.email);
+        const role = data.role === "analyst" ? "analyst" : "user";
+        const fullName = [data.firstName, data.lastName]
+          .filter((part): part is string => Boolean(part && part.trim()))
+          .join(" ")
+          .trim();
+
         const { data: authData, error } = await supabase.auth.signUp({
           email: data.email,
           password: data.password,
           options: {
             data: {
-              username: data.username,
-            }
-          }
+              first_name: data.firstName,
+              last_name: data.lastName,
+              full_name: fullName || undefined,
+              display_name: fullName || undefined,
+              role,
+            },
+          },
         });
-
-        if (error) {
-          console.error("Signup error:", error);
-          throw error;
-        }
-
-        console.log("Signup successful:", authData);
+        if (error) throw error;
         return { user: authData.user };
       } catch (error) {
         console.error("Signup failed:", error);
@@ -69,18 +69,8 @@ export function createAuthService(supabase: SupabaseClient) {
 
     async login(email: string, password: string): Promise<AuthResponse> {
       try {
-        console.log("Attempting login with email:", email);
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) {
-          console.error("Login error:", error);
-          throw error;
-        }
-
-        console.log("Login successful:", data);
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
         return { user: data.user };
       } catch (error) {
         console.error("Login failed:", error);
@@ -99,4 +89,115 @@ export function createAuthService(supabase: SupabaseClient) {
       }
     }
   };
+}
+
+// ============================================================================
+// AuthService — Static class for client-side role-aware auth.
+// Used by the admin/analyst shells and their auth forms via @/services/auth/auth.service
+// Reads from profiles(id, full_name, role, is_active, created_at)
+// ============================================================================
+export class AuthService {
+  /**
+   * Signs in with email/password and returns user + roles array.
+   * Throws if the account is deactivated or profile is missing.
+   */
+  static async signIn(
+    email: string,
+    password: string
+  ): Promise<{ user: { id: string; email: string | undefined }; roles: string[] }> {
+    const supabase = createClient();
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw new Error(error.message);
+    if (!data.user) throw new Error("Authentication failed. No user returned.");
+
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role, is_active")
+      .eq("id", data.user.id)
+      .single();
+
+    if (profileError || !profile) {
+      await supabase.auth.signOut();
+      throw new Error("User profile not found. Contact your administrator.");
+    }
+
+    if (!profile.is_active) {
+      await supabase.auth.signOut();
+      throw new Error("Your account has been deactivated.");
+    }
+
+    return {
+      user: { id: data.user.id, email: data.user.email },
+      roles: [profile.role as string],
+    };
+  }
+
+  /**
+   * Signs up a new user with email/password and optional metadata.
+   * Stores firstName, lastName, and role in user_metadata.
+   */
+  static async signUp(data: SignUpData): Promise<AuthResponse> {
+    const supabase = createClient();
+    const role = data.role === "analyst" ? "analyst" : "user";
+    const fullName = [data.firstName, data.lastName]
+      .filter((part): part is string => Boolean(part && part.trim()))
+      .join(" ")
+      .trim();
+
+    const { data: authData, error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: {
+          first_name: data.firstName,
+          last_name: data.lastName,
+          full_name: fullName || undefined,
+          display_name: fullName || undefined,
+          role,
+        },
+      },
+    });
+    if (error) throw new Error(error.message);
+    return { user: authData.user };
+  }
+
+  /** Signs out the current user. */
+  static async signOut(): Promise<void> {
+    const supabase = createClient();
+    const { error } = await supabase.auth.signOut();
+    if (error) throw new Error(error.message);
+  }
+
+  /**
+   * Returns the role as a single-element array (our schema has one role per user).
+   */
+  static async getUserRoles(userId: string): Promise<string[]> {
+    const supabase = createClient();
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .single();
+
+    if (error || !profile) return [];
+    return [profile.role as string];
+  }
+
+  /** Returns profile fields for a userId. */
+  static async getUserProfile(userId: string): Promise<{
+    full_name: string | null;
+    role: string;
+    is_active: boolean;
+  } | null> {
+    const supabase = createClient();
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("full_name, role, is_active")
+      .eq("id", userId)
+      .single();
+
+    if (error || !profile) return null;
+    return profile as { full_name: string | null; role: string; is_active: boolean };
+  }
 }

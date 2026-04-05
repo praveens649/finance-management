@@ -1,7 +1,7 @@
-const AdminLoginPage = () => {
-  return <>
-  
-  </>
-}
+import { redirect } from 'next/navigation'
 
-export default AdminLoginPage
+// /admin → always redirect to the dashboard.
+// AdminShell handles auth — if not logged in it shows the login form.
+export default function AdminPage() {
+  redirect('/admin/dashboard')
+}

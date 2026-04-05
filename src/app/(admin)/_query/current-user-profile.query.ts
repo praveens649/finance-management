@@ -1,6 +1,6 @@
-import { AuthService } from "@/services/auth/auth.service"
-
-import type { CurrentUserProfile } from "../_types/current-user-profile"
+import { AuthService } from '../../../../models/services/auth.service'
+import { CurrentUserProfile } from '../_types/current-user-profile'
+// import type { CurrentUserProfile } from '../_types/current-user-profile'
 
 type GetCurrentUserProfilePayload = {
   userId: string
@@ -16,8 +16,7 @@ export const getCurrentUserProfileClientQuery = async ({
   return {
     id: userId,
     email,
-    username: profile?.username ?? null,
-    first_name: profile?.first_name ?? null,
-    last_name: profile?.last_name ?? null,
+    // Our profiles table has `full_name` — map it directly
+    full_name: profile?.full_name ?? null,
   }
 }

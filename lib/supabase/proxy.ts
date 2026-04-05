@@ -34,7 +34,7 @@ export async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const path = request.nextUrl.pathname;
-  const isAuthRoute = path.endsWith('/login') || path.startsWith('/auth');
+  const isAuthRoute = path === '/' || path.startsWith('/auth') || path === '/signup' || path.endsWith('/login');
   const isAnalystPath = path.startsWith('/analyst') || path.startsWith('/dashboard/analyst');
   const isAnalystApiPath = path.startsWith('/api/analyst');
   const isAdminPath = path.startsWith('/admin');
@@ -46,7 +46,7 @@ export async function updateSession(request: NextRequest) {
     }
 
     const url = request.nextUrl.clone();
-    url.pathname = isAnalystPath ? '/analyst/login' : '/admin/login';
+    url.pathname = '/';
     return NextResponse.redirect(url);
   }
 
@@ -67,7 +67,7 @@ export async function updateSession(request: NextRequest) {
       }
 
       const url = request.nextUrl.clone();
-      url.pathname = isAnalystPath ? '/analyst/login' : '/admin/login';
+      url.pathname = '/';
       url.searchParams.set('error', 'Account is deactivated');
       return NextResponse.redirect(url);
     }

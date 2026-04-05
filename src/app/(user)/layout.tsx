@@ -32,9 +32,6 @@ export default function UserLayout({ children }: { children: ReactNode }) {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium border border-white/10">
-            U
-          </div>
           <button
             onClick={handleSignOut}
             disabled={signingOut}

@@ -94,7 +94,7 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
               type="button"
               onClick={() => setType("expense")}
               className={`h-11 rounded-lg text-sm font-medium transition-colors ${type === "expense"
-                ? "bg-rose-500/15 text-rose-300"
+                ? "bg-rose-500/15 text-rose-900"
                 : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
                 }`}
               disabled={isPending}
@@ -105,7 +105,7 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
               type="button"
               onClick={() => setType("income")}
               className={`h-11 rounded-lg text-sm font-medium transition-colors ${type === "income"
-                ? "bg-emerald-500/15 text-emerald-300"
+                ? "bg-emerald-500/15 text-emerald-900"
                 : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
                 }`}
               disabled={isPending}
@@ -141,8 +141,8 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
                 </div>
                 <span
                   className={`rounded-full px-3 py-1 text-xs font-medium ${category.type === "income"
-                    ? "bg-emerald-500/15 text-emerald-300"
-                    : "bg-rose-500/15 text-rose-300"
+                    ? "bg-emerald-500/15 text-emerald-900"
+                    : "bg-rose-500/15 text-rose-900"
                     }`}
                 >
                   {category.type}

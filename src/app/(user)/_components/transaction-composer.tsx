@@ -238,7 +238,7 @@ export function TransactionComposer({ accounts, categories }: TransactionCompose
                 type="button"
                 onClick={() => setSelfType("debit")}
                 className={`inline-flex h-11 items-center justify-center gap-2 rounded-lg text-sm font-medium transition-colors ${selfType === "debit"
-                  ? "bg-rose-500/15 text-rose-300"
+                  ? "bg-rose-500/15 text-rose-900"
                   : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
                   }`}
               >
@@ -249,7 +249,7 @@ export function TransactionComposer({ accounts, categories }: TransactionCompose
                 type="button"
                 onClick={() => setSelfType("credit")}
                 className={`inline-flex h-11 items-center justify-center gap-2 rounded-lg text-sm font-medium transition-colors ${selfType === "credit"
-                  ? "bg-emerald-500/15 text-emerald-300"
+                  ? "bg-emerald-500/15 text-emerald-900"
                   : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
                   }`}
               >

@@ -1,14 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SummaryCards } from "./dashboard/summary-cards"
 import { MonthlyTrendChart } from "./dashboard/monthly-trend-chart"
 import { CategoryBreakdown } from "./dashboard/category-breakdown"
 import { TopInsights } from "./dashboard/top-insights"
-import { AuthService } from "../../../../../models/services/auth.service"
 
 type DashboardPayload = {
   summary: {
@@ -48,38 +46,9 @@ function DashboardSkeleton() {
 }
 
 export function AnalystDashboard() {
-  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [dashboard, setDashboard] = useState<DashboardPayload | null>(null)
-  const [signingOut, setSigningOut] = useState(false)
-
-  async function handleSignOut() {
-    setSigningOut(true)
-    setError(null)
-
-    try {
-      await AuthService.signOut()
-      router.push("/")
-      router.refresh()
-    } catch {
-      setSigningOut(false)
-      setError("Failed to sign out. Please try again.")
-    }
-  }
-
-  const signOutButton = (
-    <div className="flex justify-end">
-      <button
-        type="button"
-        onClick={handleSignOut}
-        disabled={signingOut}
-        className="rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground hover:bg-accent disabled:opacity-50"
-      >
-        {signingOut ? "Signing out..." : "Sign out"}
-      </button>
-    </div>
-  )
 
   useEffect(() => {
     let cancelled = false
@@ -119,7 +88,6 @@ export function AnalystDashboard() {
   if (loading) {
     return (
       <div className="space-y-4">
-        {signOutButton}
         <DashboardSkeleton />
       </div>
     )
@@ -128,7 +96,6 @@ export function AnalystDashboard() {
   if (error) {
     return (
       <div className="space-y-4">
-        {signOutButton}
         <Card>
           <CardHeader>
             <CardTitle>Failed to load analytics</CardTitle>
@@ -144,7 +111,6 @@ export function AnalystDashboard() {
   if (!dashboard || (dashboard.summary.total_income === 0 && dashboard.summary.total_expense === 0 && dashboard.monthly.length === 0)) {
     return (
       <div className="space-y-4">
-        {signOutButton}
         <Card>
           <CardHeader>
             <CardTitle>No data available for analysis</CardTitle>
@@ -159,7 +125,6 @@ export function AnalystDashboard() {
 
   return (
     <div className="space-y-4">
-      {signOutButton}
       <SummaryCards summary={dashboard.summary} />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">

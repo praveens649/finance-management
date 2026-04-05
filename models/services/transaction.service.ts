@@ -71,19 +71,13 @@ export function createTransactionService(supabase: SupabaseClient) {
       }
     },
 
-    /**
-     * Creates a new financial transaction safely, enforcing all critical business logic.
-     * 🧠 Principles: Service layer guards logic, Database Trigger handles balance math.
-     */
+    
     async createTransaction(payload: CreateTransactionPayload): Promise<{ data: Transaction | null; error: string | null }> {
       try {
-        // 1 & 6. Payload Data Validation (Zod schema checking amount > 0, precision, enums)
         const validPayload = createTransactionSchema.parse(payload);
         
         const user = await getAuthorizedUser();
 
-        // 2 & 1. Account Existence & User Ownership Validation
-        // Fetch explicit account data rather than trusting frontend payload blindly
         const { data: account, error: accountError } = await supabase
           .from("accounts")
           .select("id, user_id, balance")
@@ -98,13 +92,10 @@ export function createTransactionService(supabase: SupabaseClient) {
           return { data: null, error: "Security violation: You do not have permission to interact with this account." }; // Early rejection
         }
 
-        // 3. Sufficient Balance Check
-        // Though the DB trigger does the actual auth/sub, we block invalid intent here.
         if (validPayload.type === "debit" && account.balance < validPayload.amount) {
           return { data: null, error: "Insufficient balance to execute this debit transaction." };
         }
 
-        // 4 & 5. Category Ownership & Type Consistency Verification
         if (validPayload.category_id) {
           const { data: category, error: categoryError } = await supabase
             .from("categories")
@@ -120,7 +111,6 @@ export function createTransactionService(supabase: SupabaseClient) {
             return { data: null, error: "Security violation: Category access denied." };
           }
 
-          // Type mismatch prevention (prevents 'salary' being logged as an 'expense')
           if (validPayload.type === "credit" && category.type !== "income") {
             return { data: null, error: "Logic error: Credit transactions must be assigned to income categories." };
           }
@@ -129,8 +119,6 @@ export function createTransactionService(supabase: SupabaseClient) {
           }
         }
 
-        // 7. Prevent Duplicate Submissions (Anti-Spam / Double-Click Guard)
-        // Checking for exactly identical transactions in the last 5 seconds
         const fiveSecondsAgo = new Date(Date.now() - 5000).toISOString();
         const { data: duplicates } = await supabase
           .from("transactions")
@@ -145,9 +133,6 @@ export function createTransactionService(supabase: SupabaseClient) {
           return { data: null, error: "Duplicate transaction detected. Please wait a few seconds before submitting again." };
         }
 
-        // 8. Let DB Handle Balance
-        // We ONLY insert the transaction. We explicitly do NOT attempt an `update account db.setBalance(...)`. 
-        // Our SQL trigger `on_transaction_created` handles the atomic balance sync seamlessly.
         const { data: transaction, error: insertError } = await supabase
           .from("transactions")
           .insert({
@@ -163,13 +148,11 @@ export function createTransactionService(supabase: SupabaseClient) {
 
         if (insertError) {
           console.error("Transaction DB Insert Error:", insertError);
-          // RLS or Constrains failed natively
           return { data: null, error: "Database rejected the transaction. Please try again." };
         }
 
         return { data: transaction, error: null };
       } catch (err: any) {
-        // 9. Clean Error Handling
         if (err.name === 'ZodError') {
           return { data: null, error: `Validation failed: ${err.errors[0].message}` };
         }
@@ -179,3 +162,4 @@ export function createTransactionService(supabase: SupabaseClient) {
     }
   };
 }
+

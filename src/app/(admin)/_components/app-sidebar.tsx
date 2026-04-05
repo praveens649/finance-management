@@ -30,7 +30,6 @@ import { useRouter } from 'next/navigation'
 const navItems = [
   { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { title: 'Users', href: '/admin/users', icon: Users },
-  // { title: 'User Drilldown', href: '/admin/users', icon: UserRoundSearch },
   { title: 'Transactions', href: '/admin/transactions', icon: ArrowLeftRight },
   { title: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
 ]
@@ -51,7 +50,6 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      {/* Header */}
       <SidebarHeader>
         <div className="flex items-center gap-3 px-2 py-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -64,7 +62,6 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      {/* Main nav */}
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
@@ -87,7 +84,6 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      {/* Footer */}
       <SidebarFooter>
         <SidebarMenu>
           {bottomItems.map((item) => (
@@ -112,3 +108,4 @@ export function AppSidebar() {
     </Sidebar>
   )
 }
+

@@ -25,7 +25,6 @@ async function buildSupabaseClient() {
               cookieStore.set(name, value, options)
             )
           } catch {
-            // Safe to ignore in server component contexts.
           }
         },
       },

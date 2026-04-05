@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AuthService } from '../../../../../models/services/auth.service'
 import { signInAdminQuery } from '../_query/admin-auth.query'
-// import { signInAdminQuery } from '../_query/admin-auth.query'
 
 export function AdminAuthForm() {
   const router = useRouter()
@@ -56,7 +55,6 @@ export function AdminAuthForm() {
   return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
 
-      {/* LEFT SIDE */}
       <div className="hidden lg:flex items-center justify-center bg-muted/40 p-12">
         <div className="relative h-full w-full overflow-hidden rounded-xl border border-border bg-background/80">
           <Image
@@ -71,7 +69,6 @@ export function AdminAuthForm() {
 
       </div>
 
-      {/* RIGHT SIDE */}
       <div className="flex items-center justify-center p-8">
 
         <div className="w-full max-w-md">
@@ -88,7 +85,6 @@ export function AdminAuthForm() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
 
-            {/* EMAIL */}
             <div className="space-y-2">
               <Label>Email</Label>
 
@@ -105,7 +101,6 @@ export function AdminAuthForm() {
               </div>
             </div>
 
-            {/* PASSWORD */}
             <div className="space-y-2">
               <Label>Password</Label>
 
@@ -147,4 +142,5 @@ export function AdminAuthForm() {
     </div>
   )
 }
+
 

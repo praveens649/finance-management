@@ -6,10 +6,7 @@ import { createServerClient } from "@supabase/ssr";
 import { OnboardAccountPayload } from "../../../../models/schemas/account.schema";
 import { createAccountService } from "../../../../models/services/account.service";
 
-/**
- * Shared helper — builds a Supabase client with the current request's cookies.
- * Server Actions have full access to next/headers, so session is always included.
- */
+
 async function buildSupabaseClient() {
   const cookieStore = await cookies();
 
@@ -27,7 +24,6 @@ async function buildSupabaseClient() {
               cookieStore.set(name, value, options)
             );
           } catch {
-            // Safe to ignore when called from a Server Component context
           }
         },
       },
@@ -35,15 +31,7 @@ async function buildSupabaseClient() {
   );
 }
 
-/**
- * Server Action: createOnboardAccountAction
- *
- * Calls the service directly (NO intermediate fetch) so the authenticated
- * session cookies are automatically available via next/headers.
- *
- * On success, revalidatePath('/user') causes Next.js to re-render the
- * server page and switch from <OnboardingForm> to <UserDashboard>.
- */
+
 export async function createOnboardAccountAction(payload: OnboardAccountPayload) {
   try {
     const supabase = await buildSupabaseClient();
@@ -55,7 +43,6 @@ export async function createOnboardAccountAction(payload: OnboardAccountPayload)
     }
 
     if (error && data) {
-      // Account created but initial balance transaction failed (soft failure)
       revalidatePath("/user");
       return { success: true, data, warning: error };
     }
@@ -67,3 +54,4 @@ export async function createOnboardAccountAction(payload: OnboardAccountPayload)
     return { success: false, error: message };
   }
 }
+

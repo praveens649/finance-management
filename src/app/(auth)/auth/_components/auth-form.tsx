@@ -13,7 +13,6 @@ import { Label } from '@/components/ui/label'
 
 import { signInUserQuery } from '../_query/auth.query'
 import { AuthService } from '../../../../../models/services/auth.service'
-// import { signInUserQuery } from '../_query/auth.query'
 
 export function AuthForm() {
     const router = useRouter()
@@ -73,7 +72,6 @@ export function AuthForm() {
     return (
         <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
 
-            {/* LEFT SIDE */}
             <div className="hidden lg:flex items-center justify-center bg-muted/40 p-12">
                 <div className="relative h-full w-full overflow-hidden rounded-xl border border-border bg-background/80">
                     <Image
@@ -88,7 +86,6 @@ export function AuthForm() {
 
             </div>
 
-            {/* RIGHT SIDE */}
             <div className="flex items-center justify-center p-8">
 
                 <div className="w-full max-w-md">
@@ -128,7 +125,6 @@ export function AuthForm() {
 
                     <form onSubmit={handleSubmit} className="space-y-5">
 
-                        {/* EMAIL */}
                         <div className="space-y-2">
                             <Label>Email Address</Label>
 
@@ -145,7 +141,6 @@ export function AuthForm() {
                             </div>
                         </div>
 
-                        {/* PASSWORD */}
                         <div className="space-y-2">
                             <Label>Password</Label>
 
@@ -170,7 +165,6 @@ export function AuthForm() {
                             </div>
                         </div>
 
-                        {/* REMEMBER */}
                         <div className="flex items-center justify-between pt-1">
 
                             <div className="flex items-center gap-2">
@@ -205,7 +199,6 @@ export function AuthForm() {
 
                     </form>
 
-                    {/* DIVIDER */}
                     <div className="flex items-center gap-4 my-7">
                         <div className="flex-1 h-px bg-border" />
                         <span className="text-xs text-muted-foreground">
@@ -231,4 +224,5 @@ export function AuthForm() {
         </div>
     )
 }
+
 

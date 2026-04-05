@@ -16,10 +16,8 @@ interface UserDashboardProps {
 }
 
 export function UserDashboard({ accounts, recentTransactions, categories }: UserDashboardProps) {
-  // Simple aggregator mapping
   const totalBalance = accounts.reduce((acc, account) => acc + Number(account.balance), 0)
 
-  // Formatting utility
   const formatCurrency = (amount: number, currency: string = "INR") => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -40,7 +38,6 @@ export function UserDashboard({ accounts, recentTransactions, categories }: User
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Header / Summary Section */}
       <section className="flex flex-col gap-6">
         <div className="space-y-2">
           <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest flex items-center gap-2">
@@ -63,7 +60,6 @@ export function UserDashboard({ accounts, recentTransactions, categories }: User
       <TransactionComposer accounts={accounts} categories={categories} />
 
       <div className="grid gap-8 lg:grid-cols-3">
-        {/* Left Column: Accounts List */}
         <div className="lg:col-span-1 space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold tracking-tight">My Accounts</h2>
@@ -93,7 +89,6 @@ export function UserDashboard({ accounts, recentTransactions, categories }: User
           </div>
         </div>
 
-        {/* Right Column: Recent Transactions */}
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold tracking-tight">Recent Transactions</h2>
@@ -143,3 +138,4 @@ export function UserDashboard({ accounts, recentTransactions, categories }: User
     </div>
   )
 }
+

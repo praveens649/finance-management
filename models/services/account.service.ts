@@ -10,10 +10,7 @@ import { requireActive, requireRole } from "./role.utils";
 import { Profile } from "../schemas/profile.schema";
 
 export function createAccountService(supabase: SupabaseClient) {
-  /**
-   * Shared helper: validate auth + profile guards.
-   * Returns the authenticated user or throws.
-   */
+  
   async function getAuthorizedUser() {
     const {
       data: { user },
@@ -39,9 +36,7 @@ export function createAccountService(supabase: SupabaseClient) {
   }
 
   return {
-    /**
-     * Gets all accounts for the securely authenticated user.
-     */
+    
     async getUserAccounts(): Promise<{
       data: Account[] | null;
       error: string | null;
@@ -77,10 +72,7 @@ export function createAccountService(supabase: SupabaseClient) {
       }
     },
 
-    /**
-     * Creates a plain account (balance starts at 0, no initial transaction).
-     * Used internally and for non-onboarding account creation.
-     */
+    
     async createAccount(payload: CreateAccountPayload): Promise<{
       data: Account | null;
       error: string | null;
@@ -119,13 +111,7 @@ export function createAccountService(supabase: SupabaseClient) {
       }
     },
 
-    /**
-     * Onboarding flow: Creates account then — if initial_balance > 0 —
-     * inserts a 'credit' transaction with description "Initial balance".
-     * The DB trigger atomically updates accounts.balance.
-     *
-     * CRITICAL: We NEVER write balance directly. Only transactions touch it.
-     */
+    
     async createAccountWithInitialBalance(payload: OnboardAccountPayload): Promise<{
       data: Account | null;
       error: string | null;
@@ -134,7 +120,6 @@ export function createAccountService(supabase: SupabaseClient) {
         const validPayload = onboardAccountSchema.parse(payload);
         const user = await getAuthorizedUser();
 
-        // Step 1 — Create the account with balance = 0
         const { data: newAccount, error: insertError } = await supabase
           .from("accounts")
           .insert({
@@ -155,8 +140,6 @@ export function createAccountService(supabase: SupabaseClient) {
           };
         }
 
-        // Step 2 — If initial_balance > 0, insert a credit transaction
-        // The DB trigger handle_transaction_balance() atomically updates accounts.balance
         const initialBalance = validPayload.initial_balance ?? 0;
 
         if (initialBalance > 0) {
@@ -173,15 +156,12 @@ export function createAccountService(supabase: SupabaseClient) {
 
           if (txError) {
             console.error("Initial Balance Transaction Error:", txError);
-            // Account was created — don't fail silently. Return the account
-            // but surface the transaction error so the caller can inform the user.
             return {
               data: newAccount as Account,
               error: `Account created but initial balance transaction failed: ${txError.message}`,
             };
           }
 
-          // Re-fetch account to get the updated balance (trigger ran)
           const { data: updatedAccount } = await supabase
             .from("accounts")
             .select("*")
@@ -203,3 +183,4 @@ export function createAccountService(supabase: SupabaseClient) {
     },
   };
 }
+

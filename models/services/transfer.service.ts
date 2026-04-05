@@ -7,29 +7,23 @@ export function createTransferService(supabase: SupabaseClient) {
   return {
     async createTransfer(payload: TransferPayload) {
       try {
-        // Run Amount & Schema validations
         const validPayload = transferPayloadSchema.parse(payload);
 
-        // Prevent transferring to the same account
         if (validPayload.source_account_id === validPayload.destination_account_id) {
           return { success: false, error: "Cannot transfer to the same account." };
         }
 
-        // Fetch User Identity securely
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError || !user) {
           return { success: false, error: "Unauthorized access: Please log in." };
         }
 
-        // Profile State Validations
         const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
         if (!profile) return { success: false, error: "Profile not found." };
         
         requireActive(profile as Profile);
         requireRole(profile as Profile, 'user');
 
-        // Rule 1: Both Accounts Must Exist
-        // Fetch both accounts simultaneously to optimize DB hits
         const { data: accounts, error: accountsError } = await supabase
           .from("accounts")
           .select("id, user_id, balance, currency, name")
@@ -39,7 +33,6 @@ export function createTransferService(supabase: SupabaseClient) {
           return { success: false, error: "One or both accounts could not be found." };
         }
 
-        // Map accounts explicitly to avoid ordering issues
         const sourceAccount = accounts.find(a => a.id === validPayload.source_account_id);
         const destAccount = accounts.find(a => a.id === validPayload.destination_account_id);
 
@@ -47,40 +40,25 @@ export function createTransferService(supabase: SupabaseClient) {
           return { success: false, error: "Account lookup mismatch." };
         }
 
-        // Rule 2: Ownership Validation (Prevent unregulated Bank transfers!)
         if (sourceAccount.user_id !== user.id || destAccount.user_id !== user.id) {
           return { success: false, error: "Security violation: Both accounts must belong to you to execute an internal transfer." };
         }
 
-        // Rule 6: Currency Consistency Check
         if (sourceAccount.currency !== destAccount.currency) {
           return { success: false, error: `Currency mismatch: Cannot transfer directly between ${sourceAccount.currency} and ${destAccount.currency}.` };
         }
 
-        // Rule 4: Sufficient Balance Check
-        // Executed at service layer to catch intent failures cleanly
         if (sourceAccount.balance < validPayload.amount) {
           return { success: false, error: "Insufficient funds in the source account." };
         }
 
-        // Rule 8: Tie Both Transactions Together
-        // Without an explicit `transfer_id` column currently in the DB schema,
-        // we utilize a UUID injected natively into the description reference.
         const transferRefId = crypto.randomUUID();
         const refTag = `[TRF-${transferRefId.substring(0,8)}]`;
 
-        // Check if this is a self-transfer (both accounts belong to user)
         const isSelfTransfer = sourceAccount.user_id === user.id && destAccount.user_id === user.id
           && sourceAccount.user_id === destAccount.user_id;
 
-        // Rule 7, 10, & 11: Atomicity, DB Triggers, and Failure Recovery
-        // Supabase/PostgREST naturally executes array inserts within a SINGLE database-level transaction.
-        // If the debit fails, the credit never happens. If the credit fails, the debit rolls back.
-        // Your database trigger safely updates the balances atomically.
         
-        // Rule 9: Category Handling
-        // For self-transfers: category = null, but description includes destination account name
-        // For external transfers: category = null
         const outDescription = isSelfTransfer
           ? `Self Transfer to ${destAccount.name} ${refTag}: ${validPayload.description || ''}`.trim()
           : `Transfer out ${refTag}: ${validPayload.description || ''}`.trim();
@@ -112,7 +90,6 @@ export function createTransferService(supabase: SupabaseClient) {
 
         if (insertError) {
           console.error("Transfer Bulk Insert Failed:", insertError);
-          // If insert fails for constraints/RLS, both are rolled back by Postgres automatically.
           return { success: false, error: "Database rejected the transfer. Changes rolled back." };
         }
 
@@ -128,3 +105,4 @@ export function createTransferService(supabase: SupabaseClient) {
     }
   };
 }
+

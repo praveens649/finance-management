@@ -39,7 +39,6 @@ export const SupabaseAuthProvider = ({
       setIsLoading(false)
     })
 
-    // Initial session fetch
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
@@ -57,3 +56,4 @@ export const SupabaseAuthProvider = ({
     </AuthContext.Provider>
   )
 }
+

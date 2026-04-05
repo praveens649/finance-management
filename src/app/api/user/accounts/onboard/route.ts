@@ -6,7 +6,6 @@ import { createAccountService } from "../../../../../../models/services/account.
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse and validate request body
     const body = await request.json();
     const parsed = onboardAccountSchema.safeParse(body);
 
@@ -17,7 +16,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Build authenticated Supabase client
     const cookieStore = await cookies();
 
     const supabase = createServerClient(
@@ -34,7 +32,6 @@ export async function POST(request: NextRequest) {
                 cookieStore.set(name, value, options)
               );
             } catch {
-              // Safe to ignore in route handlers
             }
           },
         },
@@ -45,12 +42,10 @@ export async function POST(request: NextRequest) {
     const { data, error } = await accountService.createAccountWithInitialBalance(parsed.data);
 
     if (error && !data) {
-      // Hard failure — account was not created
       return Response.json({ success: false, error }, { status: 422 });
     }
 
     if (error && data) {
-      // Soft failure — account created but initial transaction failed
       return Response.json(
         { success: true, data, warning: error },
         { status: 207 }
@@ -66,3 +61,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

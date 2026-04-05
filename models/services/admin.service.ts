@@ -96,15 +96,9 @@ function getWeekBucket(iso: string) {
   return `${year}-${month}-${dayOfMonth}`;
 }
 
-/**
- * Service Factory for Administrative Operations.
- * 
- * @param userClient A Supabase client authenticated as the current user (for identity verification).
- * @param serviceRoleClient A Supabase client instantiated with the `service_role` key to seamlessly safely bypass RLS.
- */
+
 export function createAdminService(userClient: SupabaseClient, serviceRoleClient: SupabaseClient) {
   
-  // Private helper to aggressively gatekeep every admin action
   const verifyRootAdminSecurity = async () => {
     const { data: { user }, error: authError } = await userClient.auth.getUser();
     if (authError || !user) throw new Error("Unauthorized security context.");
@@ -112,7 +106,6 @@ export function createAdminService(userClient: SupabaseClient, serviceRoleClient
     const { data: profile } = await userClient.from("profiles").select("*").eq("id", user.id).single();
     if (!profile) throw new Error("Security Identity missing.");
 
-    // Throws errors if they are deactivated or non-admin
     requireActive(profile as Profile);
     requireRole(profile as Profile, 'admin');
     
@@ -610,3 +603,4 @@ export function createAdminService(userClient: SupabaseClient, serviceRoleClient
     },
   };
 }
+

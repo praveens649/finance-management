@@ -53,8 +53,6 @@ export function OnboardingForm() {
               : "Account created successfully!"
           )
         }
-        // revalidatePath ran inside the action → Next.js re-renders the server page
-        // and automatically switches from OnboardingForm → UserDashboard.
       } else {
         toast.error(result.error ?? "Failed to create account. Please try again.")
       }
@@ -66,7 +64,6 @@ export function OnboardingForm() {
   return (
     <div className="flex min-h-[80vh] items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8 rounded-2xl border border-white/5 bg-background/50 p-8 shadow-2xl backdrop-blur-xl">
-        {/* Header */}
         <div className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <Wallet className="h-8 w-8 text-primary" />
@@ -78,7 +75,6 @@ export function OnboardingForm() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 mt-6">
-          {/* Account Name */}
           <div className="space-y-2">
             <Label htmlFor="account-name">Account Name</Label>
             <Input
@@ -92,7 +88,6 @@ export function OnboardingForm() {
             />
           </div>
 
-          {/* Quick Suggestions */}
           <div className="space-y-2">
             <Label>Quick Suggestions</Label>
             <div className="grid grid-cols-2 gap-3">
@@ -125,7 +120,6 @@ export function OnboardingForm() {
             </div>
           </div>
 
-          {/* Initial Balance */}
           <div className="space-y-2">
             <Label htmlFor="initial-balance">
               Opening Balance{" "}
@@ -169,3 +163,4 @@ export function OnboardingForm() {
     </div>
   )
 }
+

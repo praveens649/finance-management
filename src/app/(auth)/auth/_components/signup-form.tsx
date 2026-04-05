@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { signUpUserQuery } from '../_query/auth.query'
-// import { signUpUserQuery } from '../_query/auth.query'
 
 export function SignupForm() {
     const router = useRouter()
@@ -70,7 +69,6 @@ export function SignupForm() {
     return (
         <div className="grid h-screen grid-cols-1 lg:grid-cols-2 overflow-hidden">
 
-            {/* LEFT SIDE */}
             <div className="hidden lg:flex items-center justify-center bg-muted/40 p-10">
                 <div className="relative h-full w-full overflow-hidden rounded-xl border border-border bg-background/80">
                     <Image
@@ -84,12 +82,10 @@ export function SignupForm() {
                 </div>
             </div>
 
-            {/* RIGHT SIDE */}
             <div className="flex items-center justify-center px-8">
 
                 <div className="w-full max-w-md">
 
-                    {/* ROLE TABS */}
                     <div className="mb-6 grid grid-cols-2 gap-2 rounded-lg border border-border p-1">
                         <button
                             type="button"
@@ -114,7 +110,6 @@ export function SignupForm() {
                         </button>
                     </div>
 
-                    {/* HEADER */}
                     <div className="mb-6">
                         <h2 className="text-3xl font-bold mb-2">
                             Create your {selectedRole} account
@@ -127,7 +122,6 @@ export function SignupForm() {
 
                     <form onSubmit={handleSubmit} className="space-y-4">
 
-                        {/* NAME */}
                         <div className="grid grid-cols-2 gap-4">
 
                             <div className="space-y-2">
@@ -160,7 +154,6 @@ export function SignupForm() {
 
 
 
-                        {/* EMAIL */}
                         <div className="space-y-2">
                             <Label>Email Address</Label>
 
@@ -177,7 +170,6 @@ export function SignupForm() {
                             </div>
                         </div>
 
-                        {/* PASSWORD */}
                         <div className="space-y-2">
                             <Label>Password</Label>
 
@@ -202,7 +194,6 @@ export function SignupForm() {
                             </div>
                         </div>
 
-                        {/* CONFIRM PASSWORD */}
                         <div className="space-y-2">
                             <Label>Confirm Password</Label>
 
@@ -251,4 +242,5 @@ export function SignupForm() {
         </div>
     )
 }
+
 

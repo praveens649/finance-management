@@ -91,16 +91,8 @@ export function createAuthService(supabase: SupabaseClient) {
   };
 }
 
-// ============================================================================
-// AuthService — Static class for client-side role-aware auth.
-// Used by the admin/analyst shells and their auth forms via @/services/auth/auth.service
-// Reads from profiles(id, full_name, role, is_active, created_at)
-// ============================================================================
 export class AuthService {
-  /**
-   * Signs in with email/password and returns user + roles array.
-   * Throws if the account is deactivated or profile is missing.
-   */
+  
   static async signIn(
     email: string,
     password: string
@@ -133,10 +125,7 @@ export class AuthService {
     };
   }
 
-  /**
-   * Signs up a new user with email/password and optional metadata.
-   * Stores firstName, lastName, and role in user_metadata.
-   */
+  
   static async signUp(data: SignUpData): Promise<AuthResponse> {
     const supabase = createClient();
     const role = data.role === "analyst" ? "analyst" : "user";
@@ -162,16 +151,14 @@ export class AuthService {
     return { user: authData.user };
   }
 
-  /** Signs out the current user. */
+  
   static async signOut(): Promise<void> {
     const supabase = createClient();
     const { error } = await supabase.auth.signOut();
     if (error) throw new Error(error.message);
   }
 
-  /**
-   * Returns the role as a single-element array (our schema has one role per user).
-   */
+  
   static async getUserRoles(userId: string): Promise<string[]> {
     const supabase = createClient();
     const { data: profile, error } = await supabase
@@ -184,7 +171,7 @@ export class AuthService {
     return [profile.role as string];
   }
 
-  /** Returns profile fields for a userId. */
+  
   static async getUserProfile(userId: string): Promise<{
     full_name: string | null;
     role: string;
@@ -201,3 +188,4 @@ export class AuthService {
     return profile as { full_name: string | null; role: string; is_active: boolean };
   }
 }
+

@@ -1,4 +1,3 @@
-// import { AdminShell } from './_components/admin-shell'
 
 import { AdminShell } from "./_components/admin-shell"
 

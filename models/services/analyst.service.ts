@@ -74,11 +74,7 @@ function getWeekBucket(iso: string) {
   return `${year}-${month}-${dayOfMonth}`;
 }
 
-/**
- * Service Factory for Financial Analysis and Global Querying Ops.
- * 
- * @param userClient Standard authenticated Supabase client. Analyst RLS rules inherently authorize data reads.
- */
+
 export function createAnalystService(userClient: SupabaseClient) {
   const verifyAnalystSecurity = async () => {
     return null;
@@ -395,3 +391,4 @@ export function createAnalystService(userClient: SupabaseClient) {
     },
   };
 }
+

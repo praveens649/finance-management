@@ -1,4 +1,3 @@
-// import { AuthService } from '@/services/auth/auth.service'
 
 import { AuthService } from "../../../../../models/services/auth.service"
 
@@ -34,3 +33,4 @@ export const signUpUserQuery = async ({
         role,
     })
 }
+

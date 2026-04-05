@@ -8,7 +8,6 @@ import { AuthService } from '../../../../models/services/auth.service'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { AdminAuthForm } from '../admin/_components/admin-auth-form'
-// import { AppSidebar } from './app-sidebar'
 import LoaderComponent from '@/components/ui/globals/screen-loader'
 import { AppSidebar } from './app-sidebar'
 

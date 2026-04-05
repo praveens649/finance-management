@@ -23,7 +23,6 @@ async function buildSupabaseClient() {
               cookieStore.set(name, value, options)
             )
           } catch {
-            // Safe in server component contexts.
           }
         },
       },

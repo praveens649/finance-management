@@ -27,11 +27,9 @@ export default async function UserPage() {
   const transactionService = createTransactionService(supabase)
   const categoryService = createCategoryService(supabase)
   
-  // Fetch user accounts
   const { data: accounts, error } = await accountService.getUserAccounts()
 
   if (error || !accounts) {
-    // Basic error state
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center p-4 text-center">
          <h2 className="text-2xl font-bold">Error loading dashboard</h2>
@@ -40,8 +38,6 @@ export default async function UserPage() {
     )
   }
 
-  // Branching Logic
-  // If user has 0 accounts, they MUST pass through the Onboarding form.
   if (accounts.length === 0) {
     return <OnboardingForm />
   }
@@ -51,7 +47,6 @@ export default async function UserPage() {
   const safeCategories = categories ?? []
   const safeRecentTransactions = recentTransactions ?? []
 
-  // Once accounts exist, user is granted access to the Dashboard
   return (
     <UserDashboard 
       accounts={accounts} 
@@ -60,3 +55,4 @@ export default async function UserPage() {
     />
   )
 }
+

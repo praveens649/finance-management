@@ -36,6 +36,40 @@ export function UserDashboard({ accounts, recentTransactions, categories }: User
     }).format(date)
   }
 
+  const getTransactionTitle = (tx: Transaction) => {
+    const description = tx.description?.trim()
+
+    if (!description) {
+      return "Transfer"
+    }
+
+    const sentMatch = description.match(/^Self Transfer to (.+?) \[TRF-/)
+    if (sentMatch) {
+      return `Received to ${sentMatch[1]}`
+    }
+
+    const receivedMatch = description.match(/^Self Transfer from (.+?) \[TRF-/)
+    if (receivedMatch) {
+      return `Sent from ${receivedMatch[1]}`
+    }
+
+    return description
+  }
+
+  const getTransactionDisplayType = (tx: Transaction) => {
+    const description = tx.description?.trim() ?? ""
+
+    if (/^Self Transfer to .+? \[TRF-/.test(description)) {
+      return "credit"
+    }
+
+    if (/^Self Transfer from .+? \[TRF-/.test(description)) {
+      return "debit"
+    }
+
+    return tx.type
+  }
+
   return (
     <div className="space-y-8 pb-12">
       <section className="flex flex-col gap-6">
@@ -116,18 +150,29 @@ export function UserDashboard({ accounts, recentTransactions, categories }: User
               <div className="divide-y divide-white/5">
                 {recentTransactions.map((tx) => (
                   <div key={tx.id} className="flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-full ${tx.type === 'credit' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
-                        {tx.type === 'credit' ? <ArrowDownRight size={20} /> : <ArrowUpRight size={20} />}
-                      </div>
-                      <div>
-                        <p className="font-medium">{tx.description || 'Transfer'}</p>
-                        <p className="text-xs text-muted-foreground">{formatTransactionDate(tx.created_at)}</p>
-                      </div>
-                    </div>
-                    <div className={`font-semibold ${tx.type === 'credit' ? 'text-emerald-500' : 'text-foreground'}`}>
-                      {tx.type === 'credit' ? '+' : '-'}{formatCurrency(tx.amount)}
-                    </div>
+                    {(() => {
+                      const isCredit = getTransactionDisplayType(tx) === 'credit'
+
+                      return (
+                        <>
+                          <div className="flex items-center gap-4">
+                            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${isCredit ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+                              {isCredit ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
+                            </div>
+                            <div>
+                              <p className="font-medium">{getTransactionTitle(tx)}</p>
+                              <p className={`text-xs font-medium ${isCredit ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                {isCredit ? 'Credit' : 'Debit'}
+                              </p>
+                              <p className="text-xs text-muted-foreground">{formatTransactionDate(tx.created_at)}</p>
+                            </div>
+                          </div>
+                          <div className={`font-semibold ${isCredit ? 'text-emerald-500' : 'text-rose-500'}`}>
+                            {isCredit ? '+' : '-'}{formatCurrency(tx.amount)}
+                          </div>
+                        </>
+                      )
+                    })()}
                   </div>
                 ))}
               </div>

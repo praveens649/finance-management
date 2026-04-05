@@ -16,6 +16,20 @@ function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(value)
 }
 
+function getDisplayTransactionType(type: "credit" | "debit", description: string | null) {
+  const normalizedDescription = description?.trim() ?? ""
+
+  if (/^Self Transfer to .+? \[TRF-/.test(normalizedDescription)) {
+    return "credit"
+  }
+
+  if (/^Self Transfer from .+? \[TRF-/.test(normalizedDescription)) {
+    return "debit"
+  }
+
+  return type
+}
+
 export function AdminTransactionsPanel() {
   const pageSize = 7
   const [loading, setLoading] = useState(true)
@@ -128,16 +142,20 @@ export function AdminTransactionsPanel() {
                 <td colSpan={6} className="px-4 py-6 text-center text-muted-foreground">No transactions match filters.</td>
               </tr>
             ) : (
-              paginatedRows.map((row) => (
-                <tr key={row.id} className="border-b border-border/70 text-foreground">
-                  <td className="px-4 py-3">{new Date(row.created_at).toLocaleString("en-GB", { timeZone: "UTC" })}</td>
-                  <td className="px-4 py-3">{row.id}</td>
-                  <td className="px-4 py-3">{row.user_full_name?.trim() || `User ${row.user_id.slice(0, 8)}`}</td>
-                  <td className={`px-4 py-3 font-medium ${row.type === "credit" ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>{row.type}</td>
-                  <td className="px-4 py-3">{formatCurrency(row.amount)}</td>
-                  <td className="px-4 py-3">{row.description || "-"}</td>
-                </tr>
-              ))
+              paginatedRows.map((row) => {
+                const displayType = getDisplayTransactionType(row.type, row.description)
+
+                return (
+                  <tr key={row.id} className="border-b border-border/70 text-foreground">
+                    <td className="px-4 py-3">{new Date(row.created_at).toLocaleString("en-GB", { timeZone: "UTC" })}</td>
+                    <td className="px-4 py-3">{row.id}</td>
+                    <td className="px-4 py-3">{row.user_full_name?.trim() || `User ${row.user_id.slice(0, 8)}`}</td>
+                    <td className={`px-4 py-3 font-medium ${displayType === "credit" ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>{displayType}</td>
+                    <td className="px-4 py-3">{formatCurrency(row.amount)}</td>
+                    <td className="px-4 py-3">{row.description || "-"}</td>
+                  </tr>
+                )
+              })
             )}
           </tbody>
         </table>

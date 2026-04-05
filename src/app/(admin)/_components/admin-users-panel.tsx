@@ -45,6 +45,20 @@ function formatCurrency(value: number, currency = "INR") {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 2 }).format(value)
 }
 
+function getDisplayTransactionType(type: "credit" | "debit", description: string | null) {
+  const normalizedDescription = description?.trim() ?? ""
+
+  if (/^Self Transfer to .+? \[TRF-/.test(normalizedDescription)) {
+    return "credit"
+  }
+
+  if (/^Self Transfer from .+? \[TRF-/.test(normalizedDescription)) {
+    return "debit"
+  }
+
+  return type
+}
+
 export function AdminUsersPanel() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -366,14 +380,18 @@ export function AdminUsersPanel() {
                     <p className="text-xs text-muted-foreground">Loading...</p>
                   ) : details?.transactions.length ? (
                     <div className="space-y-2">
-                      {details.transactions.slice(0, 8).map((tx) => (
-                        <div key={tx.id} className="rounded-lg border border-border px-2 py-2 text-xs text-foreground">
-                          <p className="font-medium">{tx.description || "No description"}</p>
-                          <p className={tx.type === "credit" ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}>
-                            {tx.type === "credit" ? "+" : "-"}{formatCurrency(tx.amount)}
-                          </p>
-                        </div>
-                      ))}
+                      {details.transactions.slice(0, 8).map((tx) => {
+                        const displayType = getDisplayTransactionType(tx.type, tx.description)
+
+                        return (
+                          <div key={tx.id} className="rounded-lg border border-border px-2 py-2 text-xs text-foreground">
+                            <p className="font-medium">{tx.description || "No description"}</p>
+                            <p className={displayType === "credit" ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}>
+                              {displayType === "credit" ? "+" : "-"}{formatCurrency(tx.amount)}
+                            </p>
+                          </div>
+                        )
+                      })}
                     </div>
                   ) : (
                     <p className="text-xs text-muted-foreground">No transactions.</p>

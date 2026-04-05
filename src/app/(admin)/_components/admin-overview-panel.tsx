@@ -28,6 +28,20 @@ function formatCurrency(value: number) {
   }).format(value)
 }
 
+function getDisplayTransactionType(type: "credit" | "debit", description: string | null) {
+  const normalizedDescription = description?.trim() ?? ""
+
+  if (/^Self Transfer to .+? \[TRF-/.test(normalizedDescription)) {
+    return "credit"
+  }
+
+  if (/^Self Transfer from .+? \[TRF-/.test(normalizedDescription)) {
+    return "debit"
+  }
+
+  return type
+}
+
 export function AdminOverviewPanel() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -133,17 +147,21 @@ export function AdminOverviewPanel() {
             <p className="text-sm text-muted-foreground">No transactions found.</p>
           ) : (
             <div className="space-y-2">
-              {recentTransactions.map((tx) => (
-                <div key={tx.id} className="flex items-center justify-between rounded-xl border border-border bg-background px-3 py-2">
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{tx.description || "No description"}</p>
-                    <p className="text-xs text-muted-foreground">User {tx.user_id.slice(0, 8)}...</p>
+              {recentTransactions.map((tx) => {
+                const displayType = getDisplayTransactionType(tx.type, tx.description)
+
+                return (
+                  <div key={tx.id} className="flex items-center justify-between rounded-xl border border-border bg-background px-3 py-2">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{tx.description || "No description"}</p>
+                      <p className="text-xs text-muted-foreground">User {tx.user_id.slice(0, 8)}...</p>
+                    </div>
+                    <p className={`text-sm font-semibold ${displayType === "credit" ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>
+                      {displayType === "credit" ? "+" : "-"}{formatCurrency(tx.amount)}
+                    </p>
                   </div>
-                  <p className={`text-sm font-semibold ${tx.type === "credit" ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>
-                    {tx.type === "credit" ? "+" : "-"}{formatCurrency(tx.amount)}
-                  </p>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>

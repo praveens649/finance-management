@@ -53,6 +53,20 @@ function formatBucketLabel(value: string) {
   }).format(date)
 }
 
+function getDisplayTransactionType(type: "credit" | "debit", description: string | null) {
+  const normalizedDescription = description?.trim() ?? ""
+
+  if (/^Self Transfer to .+? \[TRF-/.test(normalizedDescription)) {
+    return "credit"
+  }
+
+  if (/^Self Transfer from .+? \[TRF-/.test(normalizedDescription)) {
+    return "debit"
+  }
+
+  return type
+}
+
 export function AdminUserDrilldown({ userId }: { userId: string }) {
   const [period, setPeriod] = useState<"weekly" | "monthly">("monthly")
   const [loading, setLoading] = useState(true)
@@ -112,7 +126,8 @@ export function AdminUserDrilldown({ userId }: { userId: string }) {
     const rows = snapshot?.transactions ?? []
 
     return rows.filter((tx) => {
-      const matchesType = txTypeFilter === "all" ? true : tx.type === txTypeFilter
+      const displayType = getDisplayTransactionType(tx.type, tx.description)
+      const matchesType = txTypeFilter === "all" ? true : displayType === txTypeFilter
       const query = txSearch.trim().toLowerCase()
       const matchesSearch = query
         ? [tx.description ?? "", tx.category_name, tx.account_name].join(" ").toLowerCase().includes(query)
@@ -336,16 +351,20 @@ export function AdminUserDrilldown({ userId }: { userId: string }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTransactions.slice(0, 50).map((tx) => (
-                    <tr key={tx.id} className="border-b border-border/70 text-foreground">
-                      <td className="px-3 py-2">{new Date(tx.created_at).toLocaleDateString("en-GB", { timeZone: "UTC" })}</td>
-                      <td className={`px-3 py-2 font-medium ${tx.type === "credit" ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>{tx.type}</td>
-                      <td className="px-3 py-2">{formatCurrency(tx.amount)}</td>
-                      <td className="px-3 py-2">{tx.category_name}</td>
-                      <td className="px-3 py-2">{tx.account_name}</td>
-                      <td className="px-3 py-2">{tx.description || "-"}</td>
-                    </tr>
-                  ))}
+                  {filteredTransactions.slice(0, 50).map((tx) => {
+                    const displayType = getDisplayTransactionType(tx.type, tx.description)
+
+                    return (
+                      <tr key={tx.id} className="border-b border-border/70 text-foreground">
+                        <td className="px-3 py-2">{new Date(tx.created_at).toLocaleDateString("en-GB", { timeZone: "UTC" })}</td>
+                        <td className={`px-3 py-2 font-medium ${displayType === "credit" ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>{displayType}</td>
+                        <td className="px-3 py-2">{formatCurrency(tx.amount)}</td>
+                        <td className="px-3 py-2">{tx.category_name}</td>
+                        <td className="px-3 py-2">{tx.account_name}</td>
+                        <td className="px-3 py-2">{tx.description || "-"}</td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>

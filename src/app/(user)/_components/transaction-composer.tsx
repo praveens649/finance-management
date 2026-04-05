@@ -242,7 +242,7 @@ export function TransactionComposer({ accounts, categories }: TransactionCompose
                   : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
                   }`}
               >
-                <ArrowUpRight className="h-4 w-4" />
+                <ArrowDownRight className="h-4 w-4" />
                 Debit
               </button>
               <button
@@ -253,7 +253,7 @@ export function TransactionComposer({ accounts, categories }: TransactionCompose
                   : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
                   }`}
               >
-                <ArrowDownRight className="h-4 w-4" />
+                <ArrowUpRight className="h-4 w-4" />
                 Credit
               </button>
             </div>

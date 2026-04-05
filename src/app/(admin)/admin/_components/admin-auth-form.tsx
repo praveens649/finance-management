@@ -2,6 +2,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import { toast } from 'sonner'
@@ -57,11 +58,15 @@ export function AdminAuthForm() {
 
       {/* LEFT SIDE */}
       <div className="hidden lg:flex items-center justify-center bg-muted/40 p-12">
-
-        <div className="flex h-full w-full items-center justify-center rounded-xl border border-dashed border-border bg-background/60">
-          <span className="text-sm text-muted-foreground">
-            Left side illustration / branding placeholder
-          </span>
+        <div className="relative h-full w-full overflow-hidden rounded-xl border border-border bg-background/80">
+          <Image
+            src="/landing.png"
+            alt="Finance management platform preview"
+            fill
+            priority
+            sizes="50vw"
+            className="object-contain object-center p-8"
+          />
         </div>
 
       </div>

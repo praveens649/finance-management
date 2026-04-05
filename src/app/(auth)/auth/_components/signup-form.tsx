@@ -2,6 +2,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Mail, Lock, User, AtSign } from 'lucide-react'
 import { toast } from 'sonner'
@@ -71,10 +72,15 @@ export function SignupForm() {
 
             {/* LEFT SIDE */}
             <div className="hidden lg:flex items-center justify-center bg-muted/40 p-10">
-                <div className="flex h-full w-full items-center justify-center rounded-xl border border-dashed border-border bg-background/60">
-                    <span className="text-sm text-muted-foreground">
-                        Product preview / illustration placeholder
-                    </span>
+                <div className="relative h-full w-full overflow-hidden rounded-xl border border-border bg-background/80">
+                    <Image
+                        src="/landing.png"
+                        alt="Finance management platform preview"
+                        fill
+                        priority
+                        sizes="50vw"
+                        className="object-contain object-center p-8"
+                    />
                 </div>
             </div>
 

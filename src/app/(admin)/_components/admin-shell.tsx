@@ -34,14 +34,14 @@ function AdminShellContent({ children }: AdminShellProps) {
 
         if (!hasAdminRole) {
           await AuthService.signOut().catch(() => undefined)
-          router.replace('/admin')
+          router.replace('/')
           return { isAdmin: false }
         }
 
         return { isAdmin: true }
       } catch {
         await AuthService.signOut().catch(() => undefined)
-        router.replace('/admin')
+        router.replace('/')
         return { isAdmin: false }
       }
     },

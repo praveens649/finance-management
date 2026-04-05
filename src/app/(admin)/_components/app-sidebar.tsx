@@ -44,7 +44,7 @@ export function AppSidebar() {
 
   const handleSignOut = async () => {
     await AuthService.signOut().catch(() => undefined)
-    router.replace('/admin')
+    router.push('/')
     router.refresh()
   }
 

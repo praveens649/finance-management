@@ -1,7 +1,7 @@
 "use client"
 
 import { ReactNode, useState } from "react"
-import { usePathname, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { LogOut, Shield } from "lucide-react"
 import { toast } from "sonner"
 import { useAuth } from "@/components/providers/auth-provider"
@@ -9,11 +9,9 @@ import { AuthService } from "../../../models/services/auth.service"
 
 export default function AnalystLayout({ children }: { children: ReactNode }) {
   const router = useRouter()
-  const pathname = usePathname()
   const { user, isLoading } = useAuth()
   const [signingOut, setSigningOut] = useState(false)
 
-  const isLoginPage = pathname === "/analyst/login"
   async function handleSignOut() {
     setSigningOut(true)
 
@@ -29,7 +27,7 @@ export default function AnalystLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background font-sans text-foreground antialiased">
-      {!isLoginPage && user ? (
+      {user ? (
         <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
           <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 md:px-8">
             <div className="flex items-center gap-3">

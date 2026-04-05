@@ -5,7 +5,7 @@ export interface SignUpData {
   password: string;
   firstName?: string;
   lastName?: string;
-  role?: 'user' | 'analyst';
+  role?: 'user' | 'analyst' | 'admin';
 }
 
 export interface AuthResponse {

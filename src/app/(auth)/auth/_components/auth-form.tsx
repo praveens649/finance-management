@@ -16,7 +16,7 @@ import { AuthService } from '../../../../../models/services/auth.service'
 
 export function AuthForm() {
     const router = useRouter()
-    const [selectedRole, setSelectedRole] = useState<'user' | 'analyst'>('user')
+    const [selectedRole, setSelectedRole] = useState<'user' | 'analyst' | 'admin'>('user')
 
     const [showPassword, setShowPassword] = useState(false)
     const [email, setEmail] = useState('')
@@ -38,12 +38,6 @@ export function AuthForm() {
             const { roles } = await signInUserQuery({ email, password })
             const normalizedRoles = roles.map((role) => role.toLowerCase())
 
-            if (normalizedRoles.includes('admin')) {
-                await AuthService.signOut().catch(() => undefined)
-                toast.error('This is not admin authentication')
-                return
-            }
-
             if (!normalizedRoles.includes(selectedRole)) {
                 await AuthService.signOut().catch(() => undefined)
                 toast.error(`This account is not registered as ${selectedRole}`)
@@ -57,6 +51,11 @@ export function AuthForm() {
 
             if (selectedRole === 'analyst') {
                 router.push('/analyst')
+                return
+            }
+
+            if (selectedRole === 'admin') {
+                router.push('/admin')
                 return
             }
 
@@ -91,7 +90,7 @@ export function AuthForm() {
                 <div className="w-full max-w-md">
 
                     <div className="mb-8">
-                        <div className="mb-5 grid grid-cols-2 gap-2 rounded-lg border border-border p-1">
+                        <div className="mb-5 grid grid-cols-3 gap-2 rounded-lg border border-border p-1">
                             <button
                                 type="button"
                                 onClick={() => setSelectedRole('user')}
@@ -111,6 +110,16 @@ export function AuthForm() {
                                     }`}
                             >
                                 Analyst
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setSelectedRole('admin')}
+                                className={`h-10 rounded-md text-sm font-medium transition-colors ${selectedRole === 'admin'
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'text-muted-foreground hover:bg-muted'
+                                    }`}
+                            >
+                                Admin
                             </button>
                         </div>
 

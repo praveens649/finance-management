@@ -128,6 +128,12 @@ export class AuthService {
   
   static async signUp(data: SignUpData): Promise<AuthResponse> {
     const supabase = createClient();
+    
+    // Admin accounts can only be created by existing admins, not through signup
+    if (data.role === "admin") {
+      throw new Error("Admin accounts cannot be created through signup");
+    }
+    
     const role = data.role === "analyst" ? "analyst" : "user";
     const fullName = [data.firstName, data.lastName]
       .filter((part): part is string => Boolean(part && part.trim()))

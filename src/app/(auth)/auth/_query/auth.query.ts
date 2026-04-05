@@ -15,7 +15,7 @@ export type SignUpPayload = {
     password: string
     firstName?: string
     lastName?: string
-    role?: 'user' | 'analyst'
+    role?: 'user' | 'analyst' | 'admin'
 }
 
 export const signUpUserQuery = async ({
